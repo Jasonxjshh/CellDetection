@@ -1,29 +1,58 @@
-package com.eleven.cellcommon.result;
+package com.eleven.celldetection.utils;
 
-import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public class Result<T> implements Serializable {
-    private Integer code; //编码：1成功，0和其它数字为失败
-    private String msg; //错误信息
-    private T data; //数据
+/**
+ *  返回实体类
+ * @param <T>
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Result<T> {
+    Integer code;
+    T data;
+    String message;
 
+    //    成功，返回空值
     public static <T> Result<T> success() {
-        Result<T> result = new Result<T>();
-        result.code = 1;
-        return result;
+        return new Result<>(200, null, "true");
     }
 
-    public static <T> Result<T> success(T object) {
-        Result<T> result = new Result<T>();
-        result.data = object;
-        result.code = 1;
-        return result;
+    //    成功，返回值
+    public static <T> Result<T> success(T data) {
+        return new Result<>(200, data, "true");
     }
 
-    public static <T> Result<T> error(String msg) {
-        Result result = new Result();
-        result.msg = msg;
-        result.code = 0;
-        return result;
+    //成功 返回提示信息
+    public static <T> Result<T> success(String message) {
+        return new Result<>(200, null, message);
+    }
+
+    //    成功， 返回值和提示信息
+    public static <T> Result<T> success(T data, String message) {
+        return new Result<>(200, data, message);
+    }
+
+    //    失败，返回空值
+    public static <T> Result<T> fail() {
+        return new Result<>(500, null, "fail");
+    }
+
+    //    失败，返回状态码
+    public static <T> Result<T> fail(Integer code) {
+        return new Result<>(code, null, "fail");
+    }
+
+    //    失败, 返回提示信息
+    public static <T> Result<T> fail(String message) {
+        return new Result<>(500, null, message);
+    }
+
+    //    失败， 返回状态码和提示信息
+    public static <T> Result<T> fail(Integer code, String message) {
+        return new Result<>(code, null, message);
     }
 }

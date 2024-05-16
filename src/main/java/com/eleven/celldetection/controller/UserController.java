@@ -1,9 +1,20 @@
-package com.eleven.controller;
+package com.eleven.celldetection.controller;
 
 
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.eleven.celldetection.annotation.JwtToken;
+import com.eleven.celldetection.dto.UserLoginDTO;
+import com.eleven.celldetection.entity.User;
+import com.eleven.celldetection.service.UserService;
+import com.eleven.celldetection.utils.BaseContext;
+import com.eleven.celldetection.utils.JwtUtil;
+import com.eleven.celldetection.utils.Result;
+import com.eleven.celldetection.vo.UserLoginVO;
+import jakarta.websocket.server.PathParam;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
+import java.util.Objects;
 
 /**
  * <p>
@@ -14,7 +25,40 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2024-05-08
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
+@Slf4j
 public class UserController {
+
+    @Autowired
+    private UserService userService;
+    @JwtToken(required = false)
+    @PostMapping("/login")
+    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO){
+        log.info("用户登录：{}", userLoginDTO);
+        User user = userService.login(userLoginDTO);
+        String token = JwtUtil.sign(user.getId(), user.getUsername(), user.getRole());
+        BaseContext.setCurrentUser(user);
+        log.info(BaseContext.getCurrentUser().toString());
+        UserLoginVO userLoginVO = UserLoginVO.builder()
+                .id(user.getId())
+                .userName(user.getUsername())
+                .name(user.getName())
+                .role(user.getRole())
+                .token(token)
+                .build();
+        return Result.success(userLoginVO);
+    }
+    @JwtToken
+    @GetMapping("/getUSerByToken")
+    public Result<User> getUSerByToken(@PathParam("token") String token){
+        String parseToken = JwtUtil.parseToken(token);
+        Long id = Objects.requireNonNull(JwtUtil.getTockenClaims(parseToken, "id")).asLong();
+        User user = userService.getById(id);
+        if (user != null){
+            return Result.success(user);
+        }else {
+            return Result.fail("用户不存在");
+        }
+    }
 
 }

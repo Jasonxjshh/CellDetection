@@ -1,15 +1,18 @@
-package com.eleven.entity;
+package com.eleven.celldetection.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * <p>
@@ -29,7 +32,7 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @ApiModelProperty(value = "姓名")
@@ -69,19 +72,24 @@ public class User implements Serializable {
     private Integer role;
 
     @ApiModelProperty(value = "创建时间")
-    @TableField("create_at")
-    private LocalDateTime createAt;
+    @TableField(value = "create_at", fill = FieldFill.INSERT)
+    //在属性上加入注解，对日期进行格式化
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createAt;
 
     @ApiModelProperty(value = "更新时间")
-    @TableField("update_at")
-    private LocalDateTime updateAt;
+    @TableField(value = "update_at", fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date updateAt;
 
     @ApiModelProperty(value = "创建人")
-    @TableField("create_by")
+    @TableField(value = "create_by", fill = FieldFill.INSERT)
     private Long createBy;
 
     @ApiModelProperty(value = "修改人")
-    @TableField("update_by")
+    @TableField(value = "update_by", fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
 

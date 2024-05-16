@@ -1,6 +1,7 @@
-package com.eleven.cellcommon.utils;
+package com.eleven.celldetection.utils;
 
-import com.eleven.cellpojo.entity.User;
+
+import com.eleven.celldetection.entity.User;
 
 public class BaseContext {
     private static ThreadLocal<User> threadLocal = new ThreadLocal<>();

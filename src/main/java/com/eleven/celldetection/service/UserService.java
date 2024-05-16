@@ -1,7 +1,9 @@
 package com.eleven.celldetection.service;
 
-import com.eleven.entity.User;
+
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.eleven.celldetection.dto.UserLoginDTO;
+import com.eleven.celldetection.entity.User;
 
 /**
  * <p>
@@ -11,6 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author Jason
  * @since 2024-05-08
  */
-public interface IUserService extends IService<User> {
+public interface UserService extends IService<User> {
 
+    User login(UserLoginDTO userDTO);
 }

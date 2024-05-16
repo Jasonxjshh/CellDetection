@@ -1,7 +1,8 @@
-package com.sky.handler;
+package com.eleven.celldetection.handler;
 
-import com.sky.exception.BaseException;
-import com.sky.result.Result;
+
+import com.eleven.celldetection.exception.BaseException;
+import com.eleven.celldetection.utils.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     public Result exceptionHandler(BaseException ex){
         log.error("异常信息：{}", ex.getMessage());
-        return Result.error(ex.getMessage());
+        return Result.fail(ex.getMessage());
     }
 
 }
