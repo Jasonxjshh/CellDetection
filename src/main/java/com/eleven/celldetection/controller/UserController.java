@@ -36,7 +36,7 @@ public class UserController {
     public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO){
         log.info("用户登录：{}", userLoginDTO);
         User user = userService.login(userLoginDTO);
-        String token = JwtUtil.sign(user.getId(), user.getUsername(), user.getRole());
+        String token = JwtUtil.sign(user.getId(), user.getRole());
         BaseContext.setCurrentUser(user);
         log.info(BaseContext.getCurrentUser().toString());
         UserLoginVO userLoginVO = UserLoginVO.builder()
@@ -59,6 +59,34 @@ public class UserController {
         }else {
             return Result.fail("用户不存在");
         }
+    }
+
+
+    @JwtToken()
+    @PostMapping("/update")
+    public Result<User> update(@RequestBody User user){
+        log.info("修改用户信息：{}", user);
+        if (user != null) {
+            if (userService.updateById(user)){
+                User newUser = userService.getById(user.getId());
+                BaseContext.setCurrentUser(newUser);
+                return Result.success(newUser);
+            }
+        }
+        return Result.fail(500, "修改用户信息失败");
+    }
+
+
+    @JwtToken()
+    @PostMapping("/add")
+    public Result<User> addUser(@RequestBody User user){
+        log.info("新增用户信息：{}", user);
+        if (user != null) {
+            if (userService.save(user)){
+                return Result.success();
+            }
+        }
+        return Result.fail(500, "修改用户信息失败");
     }
 
 }

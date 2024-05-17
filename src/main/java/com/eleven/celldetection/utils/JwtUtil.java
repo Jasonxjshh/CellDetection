@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class JwtUtil {
@@ -49,7 +50,7 @@ public class JwtUtil {
      * @param userId
      * @return
      */
-    public static String sign(Long userId, String username, int role) {
+    public static String sign(Long userId, int role) {
         try {
             //过期时间
             Date date = new Date(System.currentTimeMillis() + EXPIRE_TIME);
@@ -59,7 +60,6 @@ public class JwtUtil {
             return JWT.create()
                     // 将 user id 保存到 token 里面
                     .withClaim("id", userId)
-                    .withClaim("username", username)
                     .withClaim("role", role)
                     // 分钟后token过期
                     .withExpiresAt(date)
@@ -88,11 +88,10 @@ public class JwtUtil {
 			// 获取附带信息，并进行自定义验证，这里是验证根据userid查出来的用户名与token中附带的用户名是否一致
             Map<String, Claim> claims = jwt.getClaims();
             Long userId = claims.get("id").asLong();
-            String username = claims.get("username").asString();
             int role = claims.get("role").asInt();
-            String un = jwtUtil.userService.getById(userId).getUsername();
+            Long id = jwtUtil.userService.getById(userId).getId();
             int r = jwtUtil.userService.getById(userId).getRole();
-            if (!un.equals(username)) {
+            if (!Objects.equals(id, userId)) {
                 throw new RuntimeException("token无效，请重新登录");
             }
             if (role < r) {
