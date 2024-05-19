@@ -11,10 +11,8 @@ import com.eleven.celldetection.entity.Img;
 //import org.springframework.web.bind.annotation.RestController;
 import com.eleven.celldetection.mapper.ImgMapper;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.websocket.server.PathParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 //import javax.annotation.Resource;
@@ -112,11 +110,11 @@ public class ImgController {
             // 将上传文件保存到目标文件中
             file.transferTo(dest);
             data.put("state", "文件上传成功");
-            img.setState("文件上传成功");
+//            img.setUserid("文件上传成功");
 
         } catch (IOException e) {
             data.put("state", "文件上传失败");
-            img.setState("文件上传失败");
+//            img.setUserid("文件上传失败");
         } finally {
             imgMapper.insert(img);
         }
@@ -124,6 +122,74 @@ public class ImgController {
         return JSON.toJSONString(data);
 
     }
+
+
+    //    @JSONField(serialize = false)
+    @PostMapping("/user_up_img")
+    public String user_up_img( @RequestParam MultipartFile file , @RequestParam String user_id  ) {
+
+        Integer userid = Integer.parseInt(user_id) ;
+
+        HashMap<String, Object> data = new HashMap<>();
+
+        if (file.isEmpty()) {
+            data.put("userid", user_id);
+            return JSON.toJSONString(data);
+        }
+
+        Img img = new Img();
+
+        try {
+
+            Date date = new Date();
+
+            String time = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(date);
+            data.put("time", time);
+            img.setTime(time);
+
+            // 获取文件名
+            String fileName = "(" + new SimpleDateFormat("yyyyMMdd-HHmmss-S").format(date) + ")" + file.getOriginalFilename();
+
+            data.put("fileName", fileName);
+            data.put("file", file.getOriginalFilename());
+            img.setFile_name(fileName);
+
+            // 设置文件存储路径
+            String filePath = path + fileName;
+
+
+            // 设置文件存储路径
+//            String filePath = ".\\save_pic\\" + fileName;
+
+            File dest = new File(filePath);
+
+            data.put("filePath", dest.getPath());
+            img.setFilePath(dest.getPath());
+
+            // 如果目录不存在则创建
+            if (!dest.getParentFile().exists()) {
+                if (!dest.getParentFile().mkdirs()) {
+                    return "false";
+                }
+            }
+            // 将上传文件保存到目标文件中
+            file.transferTo(dest);
+            data.put("userid", userid);
+            img.setUserid(userid);
+
+        } catch (IOException e) {
+            data.put("userid", userid);
+            img.setUserid(userid);
+        } finally {
+            imgMapper.insert(img);
+        }
+
+        return JSON.toJSONString(data);
+
+    }
+
+
+
 
 
 }

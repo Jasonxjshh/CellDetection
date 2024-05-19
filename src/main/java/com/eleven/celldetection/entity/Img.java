@@ -33,7 +33,7 @@ public class Img implements Serializable {
 
     private String time;
 
-    private String state;
+    private Integer userid;
 
     private String filepath;
 
