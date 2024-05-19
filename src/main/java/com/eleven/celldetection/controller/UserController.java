@@ -1,6 +1,7 @@
 package com.eleven.celldetection.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.eleven.celldetection.annotation.JwtToken;
 import com.eleven.celldetection.dto.UserLoginDTO;
 import com.eleven.celldetection.entity.User;
@@ -9,11 +10,14 @@ import com.eleven.celldetection.utils.BaseContext;
 import com.eleven.celldetection.utils.JwtUtil;
 import com.eleven.celldetection.utils.Result;
 import com.eleven.celldetection.vo.UserLoginVO;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import jakarta.websocket.server.PathParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -86,7 +90,22 @@ public class UserController {
                 return Result.success();
             }
         }
-        return Result.fail(500, "修改用户信息失败");
+        return Result.fail(500, "新增用户信息失败");
+    }
+
+    @JwtToken()
+    @GetMapping("/getUsersByPage/{currentPage}/{pageSize}/{role}")
+    public Result<PageInfo<User>> getUsersByPage(@PathVariable("currentPage") Integer currentPage, @PathVariable("pageSize") Integer pageSize
+            , @PathVariable("role") Integer role){
+        log.info("分页查询User：Page: {} PageSize: {} Role: {}", currentPage, pageSize, role);
+        PageHelper.startPage(currentPage, pageSize);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("role", role);
+        List<User> userByPage = userService.list(queryWrapper);
+        if (userByPage != null){
+            return Result.success(new PageInfo<>(userByPage));
+        }
+        return Result.fail(500, "分页查询用户信息失败");
     }
 
 }

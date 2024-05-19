@@ -4,6 +4,7 @@ package com.eleven.celldetection.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.eleven.celldetection.dto.UserLoginDTO;
 import com.eleven.celldetection.entity.User;
+import com.github.pagehelper.PageInfo;
 
 /**
  * <p>
@@ -16,4 +17,6 @@ import com.eleven.celldetection.entity.User;
 public interface UserService extends IService<User> {
 
     User login(UserLoginDTO userDTO);
+
+    PageInfo<User> getUserByPage(int currentPage, int pageSize, int role);
 }

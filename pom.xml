@@ -104,6 +104,14 @@
             <artifactId>tomcat-embed-core</artifactId>
             <version>10.1.20</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper</artifactId>
+            <version>5.3.3</version>
+            <!-- 分页插件只会在编译期有用，这里可以声明为compile -->
+            <scope>compile</scope>
+        </dependency>
+
 
 
     </dependencies>
