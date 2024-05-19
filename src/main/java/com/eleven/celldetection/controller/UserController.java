@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.eleven.celldetection.annotation.JwtToken;
 import com.eleven.celldetection.dto.UserLoginDTO;
 import com.eleven.celldetection.entity.User;
+import com.eleven.celldetection.mapper.UserMapper;
 import com.eleven.celldetection.service.UserService;
 import com.eleven.celldetection.utils.BaseContext;
 import com.eleven.celldetection.utils.JwtUtil;
@@ -52,6 +53,9 @@ public class UserController {
                 .build();
         return Result.success(userLoginVO);
     }
+
+    private UserMapper userMapper ;
+
     @JwtToken
     @GetMapping("/getUSerByToken")
     public Result<User> getUSerByToken(@PathParam("token") String token){
