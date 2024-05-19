@@ -163,8 +163,8 @@ public class ImgController {
 
             File dest = new File(filePath);
 
-            data.put("filePath", dest.getPath());
-            img.setFilePath(dest.getPath());
+            data.put("filePath", dest.getAbsolutePath());
+            img.setFilePath(filePath);
 
             // 如果目录不存在则创建
             if (!dest.getParentFile().exists()) {
