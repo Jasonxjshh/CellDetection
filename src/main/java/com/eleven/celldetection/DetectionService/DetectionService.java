@@ -89,7 +89,7 @@ public class DetectionService {
         Criteria<Image, DetectedObjects> criteria = Criteria.builder()
                 .optApplication(Application.CV.OBJECT_DETECTION) //指定应用类型为对象检测
                 .setTypes(Image.class, DetectedObjects.class)
-                .optModelPath(Paths.get("D:\\202402\\cell-detection\\src\\main\\java\\com\\eleven\\celldetection\\model\\best.torchscript.pt"))
+                .optModelPath(Paths.get("D:\\WeChat Files\\wxid_v3cz1l2dh2uq22\\FileStorage\\File\\2024-05\\CellDetection\\src\\main\\java\\com\\eleven\\celldetection\\model\\best.torchscript.pt"))
                 .optModelName("best.torchscript.pt")
                 .optEngine("PyTorch")
                 .optTranslator(translator)
