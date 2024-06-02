@@ -17,8 +17,15 @@ import ai.djl.training.util.ProgressBar;
 import ai.djl.translate.Pipeline;
 import ai.djl.translate.TranslateException;
 import ai.djl.translate.Translator;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.eleven.celldetection.util.YoloImgUtil;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.opencv.core.Mat;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,23 +34,42 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.RenderedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
+import java.util.*;
 import java.util.List;
 import java.util.function.Predicate;
 
 @Service
 public class DetectionService {
+
+    public static BufferedImage convertBase64ToImage(String base64String) {
+        // Check if the base64String is not null
+        if (base64String == null || base64String.isEmpty()) {
+            return null;
+        }
+
+        // Decode the Base64 string to binary data
+        byte[] imageBytes;
+        try {
+            imageBytes = Base64.getDecoder().decode(base64String);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error decoding Base64 string: " + e.getMessage());
+            return null;
+        }
+
+        // Convert byte array into BufferedImage
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes)) {
+            return ImageIO.read(bis);
+        } catch (IOException e) {
+            System.err.println("Error creating image from byte array: " + e.getMessage());
+            return null;
+        }
+    }
 
 
     public static BufferedImage matToBufferedImage(Mat mat) {
@@ -61,7 +87,10 @@ public class DetectionService {
         return image;
     }
 
-    public JSONObject detect(MultipartFile file) throws IOException, ModelException, ModelNotFoundException{
+    JSONObject resultJson = new JSONObject();
+    private static Map<String, Integer> cumulativeCounts = new HashMap<>();
+
+    public JSONObject detect(MultipartFile file , String userName , Integer age) throws IOException, ModelException, ModelNotFoundException{
         //细胞的标签
         List<String> labels = new ArrayList<>(Arrays.asList("Erythrocyte", "Lymphocyte", "Monocyte", "Neutrophil", "Eosinophil", "Juvenile cell", "other", "impurity", "Lysate", "Uncommon"));
         //创建一个临时文件来存储上传的图片
@@ -155,9 +184,17 @@ public class DetectionService {
             String base64ImageString = "data:image/jpeg;base64," + encodedImage;
 
 
+            String mapString = resultJson.getString("map");
+            System.out.println("shenmeqingkuang"+mapString);
+            updateCumulativeCounts(mapString);
+
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("image", base64ImageString);
             jsonObject.put("resultJson",resultJson);
+            jsonObject.put("cumulativeMap", cumulativeCounts);
+
+            jsonObject.put("userName", userName);
+            jsonObject.put("age", age);
             return jsonObject;
         } catch (TranslateException e) {
             e.printStackTrace();
@@ -166,6 +203,141 @@ public class DetectionService {
             Files.deleteIfExists(tempFile);
         }
     }
+
+
+    private void updateCumulativeCounts(String mapString) {
+        Map<String, Integer> map = parseMapString(mapString);
+        System.out.println("cumulativeCounts1"+cumulativeCounts);
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            String key = entry.getKey();
+            Integer newValue = entry.getValue();
+            cumulativeCounts.merge(key, newValue, Integer::sum);
+            System.out.println("cumulativeCounts"+cumulativeCounts);
+        }
+    }
+
+    private Map<String, Integer> parseMapString(String mapString) {
+        System.out.println("nihaihaoma----"+mapString);
+        Map<String, Integer> map = new HashMap<>();
+        String cleanedString = mapString.replaceAll("[{}]", "").trim();
+        String[] entries = cleanedString.split(",");
+
+        for (String entry : entries) {
+            String[] keyValue = entry.split("=");
+            System.out.println("keyvalue"+keyValue[0]+"  "+keyValue[1]+"  io"+keyValue.length);
+            if (keyValue.length == 2) {
+                try {
+                    map.put(keyValue[0].trim().replaceAll("\"", ""), Integer.parseInt(keyValue[1].trim()));
+                    System.out.println("NO"+map);
+                } catch (NumberFormatException e) {
+                    // Handle the case where the integer cannot be parsed
+                    System.err.println("Failed to parse number for key: " + keyValue[0]);
+                }
+            }
+        }
+        System.out.println("mapstring"+map);
+        return map;}
+
+    public ByteArrayInputStream createPdfReport(BufferedImage bufferedImage , String  UserName ) throws Exception{
+        Document document = new Document(PageSize.A4);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, out);
+        document.open();
+
+
+        //标题
+        Chunk chunk = new Chunk("Cerebrospinal Fluid Cytology Report",FontFactory.getFont(FontFactory.HELVETICA_BOLD,16));
+        Paragraph paragraph = new Paragraph(chunk);
+        // 设置段落的对齐方式为居中
+        paragraph.setAlignment(Element.ALIGN_CENTER);
+        document.add(new Paragraph("\n\n"));
+        paragraph.setSpacingAfter(15f);
+        document.add(paragraph);
+
+
+        //用户信息
+        Paragraph username = new Paragraph(UserName);
+//        Paragraph userage = new Paragraph("23");
+        username.setSpacingAfter(15f); // 设置文字和图片之间的间隔
+        document.add(username);
+//        document.add(userage);
+//        document.add(new Phrase("zhangsan"));
+//        document.add(new Phrase("23"));
+        //??
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage,"jpg", baos);
+        com.itextpdf.text.Image pdfImage = com.itextpdf.text.Image.getInstance(baos.toByteArray());
+        pdfImage.scaleToFit(400,400);
+        pdfImage.setSpacingAfter(10f);
+//        float x = (PageSize.A4.getWidth() - pdfImage.getScaledWidth()) / 2;
+//        float y = (PageSize.A4.getHeight() - pdfImage.getScaledHeight()) / 2;
+//        pdfImage.setAbsolutePosition(x, y);
+        document.add(pdfImage);
+        //???????
+        BaseFont baseFont = BaseFont.createFont("Helvetica","GBK", BaseFont.NOT_EMBEDDED);
+        Font textFont = new Font(baseFont, 12, Font.NORMAL);
+        PdfPTable cellTable = new PdfPTable(2); //2??
+        cellTable.setWidthPercentage(100);
+        cellTable.setWidths(new int[]{1, 1});
+
+        //???
+        cellTable.addCell(getCell("The Type of Cell", Element.ALIGN_CENTER, 1));
+        cellTable.addCell(getCell("The number of Cell", Element.ALIGN_CENTER, 1));
+//        document.add(cellTable);
+//        for (int i = 0; i < 2; i++) {
+//            PdfPCell heardCell = new PdfPCell();
+//            heardCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+//            heardCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+//            if(i == 0){
+//            heardCell.setPhrase(new Phrase("Cell", textFont));}
+//            else{
+//                heardCell.setPhrase(new Phrase("???????", textFont));
+//            }
+//            cellTable.addCell(heardCell);
+//        }
+        //????????
+        String mapString = resultJson.getString("map");
+        System.out.println(mapString);
+//        Map<String, Object> cell = JSON.parseObject(mapString, new TypeReference<Map<String, Object>>() {});
+//        cellTable.addCell("???????");
+//        System.out.println(cellTable.getHeader());
+//        cellTable.addCell("???????");
+
+        cumulativeCounts.forEach((cellName, cellCount)
+                -> {
+            PdfPCell setting1 = new PdfPCell();
+            PdfPCell setting2 = new PdfPCell();
+            setting1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            setting2.setHorizontalAlignment(Element.ALIGN_CENTER);
+            setting1.setPhrase(new Phrase(cellName, textFont));
+            cellTable.addCell(setting1);
+            setting2.setPhrase(new Phrase(String.valueOf(cellCount), textFont));
+            cellTable.addCell(setting2);
+//            cellTable.addCell(String.valueOf(cellCount));
+        });
+//                document.add(new Paragraph(cellName + ":" + cellCount));
+        document.add(cellTable);
+        document.close();
+//        ??????????????????out.toByteArray()???ByteArrayOutputStream?е?????????????PDF??????????????
+//        ????????Щ??????????ByteArrayInputStream????????????????????????????????PDF???????????????????
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+    public PdfPCell getCell(String text, int alignment, int colspan) {
+        Font font = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);  // ??????????????????
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setHorizontalAlignment(alignment);
+        cell.setColspan(colspan);
+        cell.setPadding(10);
+        cell.setBorderWidth(2);
+        cell.setBackgroundColor(BaseColor.DARK_GRAY); // ??????
+        cell.setMinimumHeight(30);
+        System.out.println("HEIGHT"+cell.getHeight()+"---"+cell.getPaddingRight());
+        return cell;
+    }
+    public void resetCounts(){
+        cumulativeCounts.clear(); //????????
+    }
+
 
 
 }

@@ -112,4 +112,18 @@ public class UserController {
         return Result.fail(500, "分页查询用户信息失败");
     }
 
+    @GetMapping("/getUsersByID/{currentPage}/{pageSize}/{id}")
+    public Result<PageInfo<User>> getUsersByID(@PathVariable("currentPage") Integer currentPage, @PathVariable("pageSize") Integer pageSize
+            , @PathVariable("id") Integer id){
+        log.info("分页查询User：Page: {} PageSize: {} id: {}", currentPage, pageSize, id);
+        PageHelper.startPage(currentPage, pageSize);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id);
+        List<User> userByPage = userService.list(queryWrapper);
+        if (userByPage != null){
+            return Result.success(new PageInfo<>(userByPage));
+        }
+        return Result.fail(500, "分页查询用户信息失败");
+    }
+
 }
