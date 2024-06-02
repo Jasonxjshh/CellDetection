@@ -115,6 +115,7 @@ public class DetectionService {
 
 
         //创建一个Criteria对象，它定义了模型加载和执行推理的条件
+        // 这里的换成自己的权重路径 在 model 路径下面 ；
         Criteria<Image, DetectedObjects> criteria = Criteria.builder()
                 .optApplication(Application.CV.OBJECT_DETECTION) //指定应用类型为对象检测
                 .setTypes(Image.class, DetectedObjects.class)
