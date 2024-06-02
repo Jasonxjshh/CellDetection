@@ -7,6 +7,7 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -14,18 +15,19 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * <p>
- * 用户表
+ * 用户日志表
  * </p>
  *
  * @author Jason
- * @since 2024-05-08
+ * @since 2024-05-21
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("user")
-@ApiModel(value="User对象", description="用户表")
-public class User implements Serializable {
+@TableName("log")
+@ApiModel(value="Log对象", description="用户日志表")
+@Builder
+public class Log implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -33,41 +35,20 @@ public class User implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "姓名")
-    @TableField("name")
-    private String name;
+    @ApiModelProperty(value = "管理员id")
+    private Long userId;
 
-    @ApiModelProperty(value = "用户名")
-    @TableField("username")
-    private String username;
+    @ApiModelProperty(value = "管理员姓名")
+    private String userName;
 
-    @ApiModelProperty(value = "密码")
-    @TableField("password")
-    private String password;
+    @ApiModelProperty(value = "请求url")
+    private String url;
 
-    @ApiModelProperty(value = "手机号")
-    @TableField("phone")
-    private String phone;
+    @ApiModelProperty(value = "请求ip地址")
+    private String ip;
 
-    @ApiModelProperty(value = "电子邮箱")
-    @TableField("email")
-    private String email;
-
-    @ApiModelProperty(value = "性别")
-    @TableField("sex")
-    private String sex;
-
-    @ApiModelProperty(value = "年龄")
-    @TableField("age")
-    private Integer age;
-
-    @ApiModelProperty(value = "头像")
-    @TableField("avatar")
-    private String avatar;
-
-    @ApiModelProperty(value = "用户角色: 0管理员, 1医生, 2患者")
-    @TableField("role")
-    private Integer role;
+    @ApiModelProperty(value = "请求代理")
+    private String agent;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(value = "create_at", fill = FieldFill.INSERT)
@@ -90,5 +71,6 @@ public class User implements Serializable {
     @TableField(value = "update_by", fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
-
+    @ApiModelProperty(value = "日志状态")
+    private int status;
 }

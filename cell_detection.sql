@@ -16,3 +16,20 @@ CREATE TABLE `user`  (
                              `update_by` bigint(0) NULL DEFAULT NULL COMMENT '修改人',
                              PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB  CHARACTER SET = utf8 COLLATE = utf8_bin COMMENT = '用户表' ROW_FORMAT = Dynamic;
+
+
+
+DROP TABLE IF EXISTS `log`;
+CREATE TABLE `log`  (
+                        `id` bigint(0) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                        `admin_id` bigint(0)  NOT NULL COMMENT '管理员id',
+                        `admin_name` varchar(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '管理员姓名',
+                        `url` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '请求url',
+                        `ip` varchar(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '请求ip地址',
+                        `agent` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '请求代理',
+                        `create_at` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
+                        `update_at` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
+                        `create_by` bigint(0) NULL DEFAULT NULL COMMENT '创建人',
+                        `update_by` bigint(0) NULL DEFAULT NULL COMMENT '修改人',
+                        PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB  CHARACTER SET = utf8 COLLATE = utf8_bin COMMENT = '用户日志表' ROW_FORMAT = Dynamic;

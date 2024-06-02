@@ -12,6 +12,9 @@ import com.eleven.celldetection.mapper.UserMapper;
 import com.eleven.celldetection.service.UserService;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,6 +30,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     UserMapper userMapper;
 
+
     @Override
     public User login(UserLoginDTO userLoginDTO) {
         String username = userLoginDTO.getUsername();
@@ -36,7 +40,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null){
             throw new BaseException("用户不存在");
         }
-        if (!StringUtils.equals(password, user.getPassword())){
+        if (!BCrypt.checkpw(password, user.getPassword())){
             throw new BaseException("密码错误");
         }
         if (user.getRole() != userLoginDTO.getRole()){
@@ -51,5 +55,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("role", role);
         return userMapper.selectPage(null, queryWrapper);
+    }
+
+    @Override
+    public User doRegister(User user) {
+        userMapper.insert(user);
+        return userMapper.selectById(user.getId());
     }
 }

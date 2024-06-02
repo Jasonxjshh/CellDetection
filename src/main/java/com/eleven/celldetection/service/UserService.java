@@ -19,4 +19,6 @@ public interface UserService extends IService<User> {
     User login(UserLoginDTO userDTO);
 
     PageInfo<User> getUserByPage(int currentPage, int pageSize, int role);
+
+    User doRegister(User user);
 }

@@ -110,7 +110,7 @@ public class JwtUtil {
       * @param name  附带信息名称
       * @return
       */
-	public static Claim getTockenClaims(String token, String name){
+	public static Claim getTokenClaims(String token, String name){
         try {
             Algorithm algorithm = Algorithm.HMAC256(SECRET);
             JWTVerifier verifier = JWT.require(algorithm)

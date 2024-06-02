@@ -2,6 +2,7 @@ package com.eleven.celldetection.controller;
 
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.eleven.celldetection.annotation.Log;
 import com.eleven.celldetection.entity.Img;
 //import com.eleven.celldetection.mapper.ImgMapper;
 //import org.springframework.web.bind.annotation.CrossOrigin;
@@ -63,6 +64,7 @@ public class ImgController {
 
 //    @JSONField(serialize = false)
     @PostMapping("/fileUpload")
+    @Log
     public String uploadFile(MultipartFile file) {
 
         HashMap<String, Object> data = new HashMap<>();
@@ -126,6 +128,7 @@ public class ImgController {
 
     //    @JSONField(serialize = false)
     @PostMapping("/user_up_img")
+    @Log
     public String user_up_img( @RequestParam MultipartFile file , @RequestParam String user_id  ) {
 
         Integer userid = Integer.parseInt(user_id) ;

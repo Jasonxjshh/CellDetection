@@ -3,6 +3,7 @@ package com.eleven.celldetection.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.eleven.celldetection.annotation.JwtToken;
+import com.eleven.celldetection.annotation.Log;
 import com.eleven.celldetection.dto.UserLoginDTO;
 import com.eleven.celldetection.entity.User;
 import com.eleven.celldetection.mapper.UserMapper;
@@ -16,6 +17,8 @@ import com.github.pagehelper.PageInfo;
 import jakarta.websocket.server.PathParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +39,7 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
     @JwtToken(required = false)
     @PostMapping("/login")
     public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO){
@@ -54,13 +58,29 @@ public class UserController {
         return Result.success(userLoginVO);
     }
 
-    private UserMapper userMapper ;
+    @JwtToken(required = false)
+    @PostMapping("/register")
+    public Result<UserLoginVO> register(@RequestBody User user){
+        log.info("用户注册：{}", user);
+        User newUser = userService.doRegister(user);
+        String token = JwtUtil.sign(newUser.getId(), newUser.getRole());
+        BaseContext.setCurrentUser(newUser);
+        log.info(BaseContext.getCurrentUser().toString());
+        UserLoginVO userLoginVO = UserLoginVO.builder()
+                .id(newUser.getId())
+                .userName(newUser.getUsername())
+                .name(newUser.getName())
+                .role(newUser.getRole())
+                .token(token)
+                .build();
+        return Result.success(userLoginVO);
+    }
 
     @JwtToken
     @GetMapping("/getUSerByToken")
     public Result<User> getUSerByToken(@PathParam("token") String token){
         String parseToken = JwtUtil.parseToken(token);
-        Long id = Objects.requireNonNull(JwtUtil.getTockenClaims(parseToken, "id")).asLong();
+        Long id = Objects.requireNonNull(JwtUtil.getTokenClaims(parseToken, "id")).asLong();
         User user = userService.getById(id);
         if (user != null){
             return Result.success(user);
@@ -71,6 +91,7 @@ public class UserController {
 
 
     @JwtToken()
+    @Log
     @PostMapping("/update")
     public Result<User> update(@RequestBody User user){
         log.info("修改用户信息：{}", user);
@@ -87,6 +108,7 @@ public class UserController {
 
     @JwtToken()
     @PostMapping("/add")
+    @Log
     public Result<User> addUser(@RequestBody User user){
         log.info("新增用户信息：{}", user);
         if (user != null) {
@@ -126,4 +148,15 @@ public class UserController {
         return Result.fail(500, "分页查询用户信息失败");
     }
 
+
+    @JwtToken()
+    @PostMapping("/deleteUsers")
+    @Log
+    public Result<User> deleteUsers(@RequestBody List<Integer> ids){
+        log.info("删除用户信息：{}", ids);
+        if (userService.removeBatchByIds(ids)){
+            return Result.success();
+        }
+        return Result.fail(500, "新增用户信息失败");
+    }
 }

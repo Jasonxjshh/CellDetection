@@ -28,6 +28,16 @@ spring:
     maxPoolPreparedStatementPerConnectionSize: 20
     useGlobalDataSourceStat: true
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: Jason
+    password: Jason
+    virtual-host: /JasonHost
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+
 server:
   port: 8080
 
