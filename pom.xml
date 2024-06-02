@@ -155,6 +155,31 @@
             <version>5.5.13.2</version>  <!-- 请使用最新或适当的版本号 -->
         </dependency>
 
+        <!--springEL-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-expression</artifactId>
+        </dependency>
+
+        <!--word模板-->
+        <dependency>
+            <groupId>com.deepoove</groupId>
+            <artifactId>poi-tl</artifactId>
+            <version>1.12.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.8.0</version> <!-- 使用最新的版本号 -->
+        </dependency>
+
 
 
         <!--        <dependency>-->
